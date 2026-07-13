@@ -1,0 +1,13 @@
+# nonk8s
+# 插件清单文件使用 YAML 格式存储。
+# YAML 教程：https://www.runoob.com/w3cnote/yaml-intro.html
+# 插件清单格式：https://docs.classisland.tech/zh-cn/latest/dev/plugins/create-project/#%E6%8F%92%E4%BB%B6%E6%B8%85%E5%8D%95%E6%96%87%E4%BB%B6
+
+id: codex.usage.classisland
+name: Codex 使用量
+description: 在 ClassIsland 组件中查看 Codex 每周剩余额度，并支持低额度提醒和自动化规则。
+entranceAssembly: "CodexUsageClassIsland.dll"
+url: https://chatgpt.com/codex
+version: 0.1.4.0
+apiVersion: 2.1.0.1
+author: Codex

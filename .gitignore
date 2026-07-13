@@ -1,0 +1,10 @@
+bin/
+obj/
+cipx/
+*.user
+*.suo
+*.log
+*.log.gz
+auth.json
+settings.json
+.vs/
