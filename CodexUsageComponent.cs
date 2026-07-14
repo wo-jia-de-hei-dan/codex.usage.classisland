@@ -14,7 +14,7 @@ public sealed class CodexUsageComponent : ComponentBase
     private readonly TextBlock percentText = new() { Text = "等待刷新", FontSize = 13, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
     private readonly TextBlock statusText = new() { Text = "正在读取登录状态…", FontSize = 10, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
     private readonly ProgressBar progress = new() { Minimum = 0, Maximum = 100, Height = 5, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch };
-    private readonly TextBlock freeResetTitle = new() { Text = "免费重置额度", FontSize = 11, Opacity = 0.8, Margin = new Avalonia.Thickness(0, 8, 0, 0) };
+    private readonly TextBlock freeResetTitle = new() { Text = "免费重置额度", FontSize = 11, Opacity = 0.8 };
     private readonly TextBlock freeResetPercentText = new() { Text = "暂未提供", FontSize = 13, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
     private readonly TextBlock freeResetStatusText = new() { Text = "免费重置额度暂未提供", FontSize = 10, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
     private readonly ProgressBar freeResetProgress = new() { Minimum = 0, Maximum = 100, Height = 5, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch, IsVisible = false };
