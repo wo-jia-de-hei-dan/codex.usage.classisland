@@ -20,7 +20,7 @@ public sealed class UsageResponseParser
             var value = NormalizePercent(percent);
             if (value is null) return new(UsageStatus.IncompatibleResponse, null, reset, DateTimeOffset.Now, "接口返回中没有可识别的额度百分比");
             var snapshot = new UsageSnapshot(UsageStatus.Success, value, reset, DateTimeOffset.Now, "已更新");
-            return snapshot with { FreeResetUsage = ParseFreeReset(root) };
+            return snapshot with { FreeResetUsage = ParseFreeReset(root), FreeResetCount = ParseFreeResetCount(root) };
         }
         catch (JsonException)
         {
@@ -42,6 +42,13 @@ public sealed class UsageResponseParser
         if (!TryFindObject(root, out var freeReset, "free_reset", "freeReset", "free_reset_usage")) return null;
         var percent = NormalizePercent(FindNumber(freeReset, "remaining_percent", "remainingPercentage", "remaining_percentile"));
         return percent is int value ? new UsageAllowance(value, FindDate(freeReset, "reset_at", "resetAt", "resets_at", "next_reset_at")) : null;
+    }
+
+    private static int? ParseFreeResetCount(JsonElement root)
+    {
+        if (!TryFindObject(root, out var resetCredits, "rate_limit_reset_credits", "rateLimitResetCredits")) return null;
+        var count = FindNumber(resetCredits, "available_count", "availableCount");
+        return count is >= 0 and <= int.MaxValue ? (int)Math.Round(count.Value) : null;
     }
 
     private static int? NormalizePercent(double? percent)
