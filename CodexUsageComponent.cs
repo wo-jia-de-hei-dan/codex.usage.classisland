@@ -26,29 +26,17 @@ public sealed class CodexUsageComponent : ComponentBase
         {
             Padding = new Avalonia.Thickness(8, 5),
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
-            Child = new Grid
+            Child = new StackPanel
             {
-                RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"),
+                Orientation = Orientation.Horizontal,
+                Spacing = 16,
                 Children =
                 {
-                    new TextBlock { Text = "Codex 每周额度", FontSize = 11, Opacity = 0.8 },
-                    percentText,
-                    progress,
-                    statusText,
-                    freeResetTitle,
-                    freeResetPercentText,
-                    freeResetProgress,
-                    freeResetStatusText
+                    new StackPanel { Children = { new TextBlock { Text = "Codex 每周额度", FontSize = 11, Opacity = 0.8 }, percentText } },
+                    new StackPanel { Children = { freeResetTitle, freeResetPercentText } }
                 }
             }
         };
-        Grid.SetRow(percentText, 1);
-        Grid.SetRow(progress, 2);
-        Grid.SetRow(statusText, 3);
-        Grid.SetRow(freeResetTitle, 4);
-        Grid.SetRow(freeResetPercentText, 5);
-        Grid.SetRow(freeResetProgress, 6);
-        Grid.SetRow(freeResetStatusText, 7);
         service.SnapshotUpdated += OnSnapshotUpdated;
         service.Start();
     }
