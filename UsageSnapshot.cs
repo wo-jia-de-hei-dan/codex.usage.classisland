@@ -10,6 +10,8 @@ public enum UsageStatus
     ServerRejected
 }
 
+public sealed record UsageAllowance(int RemainingPercent, DateTimeOffset? ResetAt);
+
 public sealed record UsageSnapshot(
     UsageStatus Status,
     int? RemainingPercent,
@@ -17,5 +19,7 @@ public sealed record UsageSnapshot(
     DateTimeOffset UpdatedAt,
     string Message)
 {
+    public UsageAllowance? FreeResetUsage { get; init; }
+
     public static UsageSnapshot Unknown(string message) => new(UsageStatus.Unknown, null, null, DateTimeOffset.Now, message);
 }

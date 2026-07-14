@@ -13,6 +13,10 @@ public sealed class CodexUsageComponent : ComponentBase
     private readonly TextBlock percentText = new() { Text = "等待刷新", FontSize = 13, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
     private readonly TextBlock statusText = new() { Text = "正在读取登录状态…", FontSize = 10, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
     private readonly ProgressBar progress = new() { Minimum = 0, Maximum = 100, Height = 5, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch };
+    private readonly TextBlock freeResetTitle = new() { Text = "免费重置额度", FontSize = 11, Opacity = 0.8, Margin = new Avalonia.Thickness(0, 8, 0, 0) };
+    private readonly TextBlock freeResetPercentText = new() { Text = "暂未提供", FontSize = 13, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
+    private readonly TextBlock freeResetStatusText = new() { Text = "免费重置额度暂未提供", FontSize = 10, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
+    private readonly ProgressBar freeResetProgress = new() { Minimum = 0, Maximum = 100, Height = 5, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch, IsVisible = false };
 
     public CodexUsageComponent(UsageService service)
     {
@@ -24,19 +28,27 @@ public sealed class CodexUsageComponent : ComponentBase
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
             Child = new Grid
             {
-                RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto"),
+                RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"),
                 Children =
                 {
                     new TextBlock { Text = "Codex 每周额度", FontSize = 11, Opacity = 0.8 },
                     percentText,
                     progress,
-                    statusText
+                    statusText,
+                    freeResetTitle,
+                    freeResetPercentText,
+                    freeResetProgress,
+                    freeResetStatusText
                 }
             }
         };
         Grid.SetRow(percentText, 1);
         Grid.SetRow(progress, 2);
         Grid.SetRow(statusText, 3);
+        Grid.SetRow(freeResetTitle, 4);
+        Grid.SetRow(freeResetPercentText, 5);
+        Grid.SetRow(freeResetProgress, 6);
+        Grid.SetRow(freeResetStatusText, 7);
         service.SnapshotUpdated += OnSnapshotUpdated;
         service.Start();
     }
@@ -48,6 +60,12 @@ public sealed class CodexUsageComponent : ComponentBase
             percentText.Text = snapshot.RemainingPercent is int value ? $"剩余 {value}%" : snapshot.Message;
             progress.Value = snapshot.RemainingPercent ?? 0;
             statusText.Text = snapshot.ResetAt is { } reset ? $"重置 {reset.LocalDateTime:MM/dd HH:mm}" : snapshot.Message;
+            freeResetPercentText.Text = UsageDisplayFormatter.FreeResetPercent(snapshot.FreeResetUsage);
+            freeResetProgress.IsVisible = snapshot.FreeResetUsage is not null;
+            freeResetProgress.Value = snapshot.FreeResetUsage?.RemainingPercent ?? 0;
+            freeResetStatusText.Text = snapshot.FreeResetUsage is { ResetAt: { } freeReset }
+                ? $"重置 {freeReset.LocalDateTime:MM/dd HH:mm}"
+                : snapshot.FreeResetUsage is null ? "免费重置额度暂未提供" : "免费重置时间暂未提供";
         });
     }
 }

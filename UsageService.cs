@@ -43,7 +43,15 @@ public sealed class UsageService : IDisposable
             var previousLow = IsBelowThreshold;
             var snapshot = await client.FetchAsync(settings.AuthFilePath, shutdown.Token);
             if (snapshot.Status == UsageStatus.Success) lastSuccess = snapshot;
-            else if (lastSuccess is not null) snapshot = snapshot with { RemainingPercent = lastSuccess.RemainingPercent, ResetAt = lastSuccess.ResetAt };
+            else if (lastSuccess is not null)
+            {
+                snapshot = snapshot with
+                {
+                    RemainingPercent = lastSuccess.RemainingPercent,
+                    ResetAt = lastSuccess.ResetAt,
+                    FreeResetUsage = lastSuccess.FreeResetUsage
+                };
+            }
             Current = snapshot;
             SnapshotUpdated?.Invoke(this, snapshot);
             rulesetService.NotifyStatusChanged();

@@ -17,9 +17,10 @@ public sealed class UsageResponseParser
                 if (used is not null) percent = 100 - used;
             }
             var reset = FindDate(root, "reset_at", "resetAt", "resets_at", "next_reset_at");
-            if (percent is null) return new(UsageStatus.IncompatibleResponse, null, reset, DateTimeOffset.Now, "接口返回中没有可识别的额度百分比");
-            var value = Math.Clamp((int)Math.Round(percent.Value <= 1 ? percent.Value * 100 : percent.Value), 0, 100);
-            return new(UsageStatus.Success, value, reset, DateTimeOffset.Now, "已更新");
+            var value = NormalizePercent(percent);
+            if (value is null) return new(UsageStatus.IncompatibleResponse, null, reset, DateTimeOffset.Now, "接口返回中没有可识别的额度百分比");
+            var snapshot = new UsageSnapshot(UsageStatus.Success, value, reset, DateTimeOffset.Now, "已更新");
+            return snapshot with { FreeResetUsage = ParseFreeReset(root) };
         }
         catch (JsonException)
         {
@@ -34,6 +35,20 @@ public sealed class UsageResponseParser
             if (TryFind(root, name, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out var number)) return number;
         }
         return null;
+    }
+
+    private static UsageAllowance? ParseFreeReset(JsonElement root)
+    {
+        if (!TryFindObject(root, out var freeReset, "free_reset", "freeReset", "free_reset_usage")) return null;
+        var percent = NormalizePercent(FindNumber(freeReset, "remaining_percent", "remainingPercentage", "remaining_percentile"));
+        return percent is int value ? new UsageAllowance(value, FindDate(freeReset, "reset_at", "resetAt", "resets_at", "next_reset_at")) : null;
+    }
+
+    private static int? NormalizePercent(double? percent)
+    {
+        if (percent is null || double.IsNaN(percent.Value) || double.IsInfinity(percent.Value)) return null;
+        var normalized = percent.Value <= 1 ? percent.Value * 100 : percent.Value;
+        return normalized is >= 0 and <= 100 ? (int)Math.Round(normalized) : null;
     }
 
     private static DateTimeOffset? FindDate(JsonElement root, params string[] names)
@@ -60,6 +75,20 @@ public sealed class UsageResponseParser
         else if (element.ValueKind == JsonValueKind.Array)
         {
             foreach (var item in element.EnumerateArray()) if (TryFind(item, name, out value)) return true;
+        }
+        value = default;
+        return false;
+    }
+
+    private static bool TryFindObject(JsonElement element, out JsonElement value, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            if (TryFind(element, name, out var candidate) && candidate.ValueKind == JsonValueKind.Object)
+            {
+                value = candidate;
+                return true;
+            }
         }
         value = default;
         return false;
