@@ -20,6 +20,7 @@
 
 - Modify: `UsageSnapshot.cs` — 增加可选免费额度字段。
 - Modify: `UsageResponseParser.cs` — 解析免费重置额度节点，兼容缺失和异常字段。
+- Create: `UsageDisplayFormatter.cs` — 提供不依赖 Avalonia 的展示文本格式化。
 - Modify: `CodexUsageComponent.cs` — 增加免费额度卡片的展示属性和布局。
 - Modify: `../codex-usage-classisland.Tests/Program.cs` — 增加解析回归测试。
 - Modify: `README.md` — 更新功能说明，明确免费额度只展示、不参与提醒。
@@ -63,6 +64,7 @@ git commit -m "test: define free reset usage parsing"
 **Files:**
 - Modify: `UsageSnapshot.cs`
 - Modify: `UsageResponseParser.cs`
+- Modify: `UsageDisplayFormatter.cs`
 
 **Interfaces:**
 - Consumes: Codex 使用量 JSON。
