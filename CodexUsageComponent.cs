@@ -26,18 +26,23 @@ public sealed class CodexUsageComponent : ComponentBase
         var layout = new Grid
         {
             ColumnDefinitions = new ColumnDefinitions("*,*"),
-            RowDefinitions = new RowDefinitions("Auto,Auto,Auto"),
+            RowDefinitions = new RowDefinitions("Auto,Auto"),
             ColumnSpacing = 16
         };
+        var weeklyValue = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 6,
+            VerticalAlignment = VerticalAlignment.Center,
+            Children = { percentText, progress }
+        };
+        progress.Width = 56;
         layout.Children.Add(weeklyTitle);
-        layout.Children.Add(percentText);
-        layout.Children.Add(progress);
+        layout.Children.Add(weeklyValue);
         layout.Children.Add(freeResetTitle);
         layout.Children.Add(freeResetPercentText);
-        Grid.SetColumn(percentText, 0);
-        Grid.SetRow(percentText, 1);
-        Grid.SetColumn(progress, 0);
-        Grid.SetRow(progress, 2);
+        Grid.SetColumn(weeklyValue, 0);
+        Grid.SetRow(weeklyValue, 1);
         Grid.SetColumn(freeResetTitle, 1);
         Grid.SetRow(freeResetTitle, 0);
         Grid.SetColumn(freeResetPercentText, 1);
