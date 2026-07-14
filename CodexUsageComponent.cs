@@ -10,6 +10,7 @@ namespace CodexUsageClassIsland;
 public sealed class CodexUsageComponent : ComponentBase
 {
     private readonly UsageService service;
+    private readonly TextBlock weeklyTitle = new() { Text = "Codex 每周额度", FontSize = 11, Opacity = 0.8 };
     private readonly TextBlock percentText = new() { Text = "等待刷新", FontSize = 13, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
     private readonly TextBlock statusText = new() { Text = "正在读取登录状态…", FontSize = 10, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
     private readonly ProgressBar progress = new() { Minimum = 0, Maximum = 100, Height = 5, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch };
@@ -22,20 +23,30 @@ public sealed class CodexUsageComponent : ComponentBase
     {
         this.service = service;
         Plugin.Service = service;
+        var layout = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitions("*,*"),
+            RowDefinitions = new RowDefinitions("Auto,Auto,Auto"),
+            ColumnSpacing = 16
+        };
+        layout.Children.Add(weeklyTitle);
+        layout.Children.Add(percentText);
+        layout.Children.Add(progress);
+        layout.Children.Add(freeResetTitle);
+        layout.Children.Add(freeResetPercentText);
+        Grid.SetColumn(percentText, 0);
+        Grid.SetRow(percentText, 1);
+        Grid.SetColumn(progress, 0);
+        Grid.SetRow(progress, 2);
+        Grid.SetColumn(freeResetTitle, 1);
+        Grid.SetRow(freeResetTitle, 0);
+        Grid.SetColumn(freeResetPercentText, 1);
+        Grid.SetRow(freeResetPercentText, 1);
         Content = new Border
         {
-            Padding = new Avalonia.Thickness(8, 5),
+            Padding = new Avalonia.Thickness(8, 4),
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
-            Child = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 16,
-                Children =
-                {
-                    new StackPanel { Children = { new TextBlock { Text = "Codex 每周额度", FontSize = 11, Opacity = 0.8 }, percentText } },
-                    new StackPanel { Children = { freeResetTitle, freeResetPercentText } }
-                }
-            }
+            Child = layout
         };
         service.SnapshotUpdated += OnSnapshotUpdated;
         service.Start();
