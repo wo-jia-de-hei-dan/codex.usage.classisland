@@ -21,6 +21,7 @@ public sealed record UsageSnapshot(
 {
     public UsageAllowance? FreeResetUsage { get; init; }
     public int? FreeResetCount { get; init; }
+    public UsageAllowance? FiveHourUsage { get; init; }
 
     public static UsageSnapshot Unknown(string message) => new(UsageStatus.Unknown, null, null, DateTimeOffset.Now, message);
 }

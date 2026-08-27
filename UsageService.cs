@@ -50,7 +50,8 @@ public sealed class UsageService : IDisposable
                     RemainingPercent = lastSuccess.RemainingPercent,
                     ResetAt = lastSuccess.ResetAt,
                     FreeResetUsage = lastSuccess.FreeResetUsage,
-                    FreeResetCount = lastSuccess.FreeResetCount
+                    FreeResetCount = lastSuccess.FreeResetCount,
+                    FiveHourUsage = lastSuccess.FiveHourUsage
                 };
             }
             Current = snapshot;

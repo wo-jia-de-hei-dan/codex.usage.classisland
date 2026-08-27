@@ -14,6 +14,9 @@ public sealed class CodexUsageComponent : ComponentBase
     private readonly TextBlock percentText = new() { Text = "等待刷新", FontSize = 13, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
     private readonly TextBlock statusText = new() { Text = "正在读取登录状态…", FontSize = 10, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
     private readonly ProgressBar progress = new() { Minimum = 0, Maximum = 100, Height = 5, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch };
+    private readonly TextBlock fiveHourTitle = new() { Text = "Codex 5 小时额度", FontSize = 11, Opacity = 0.8 };
+    private readonly TextBlock fiveHourPercentText = new() { Text = "暂未提供", FontSize = 13, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
+    private readonly ProgressBar fiveHourProgress = new() { Minimum = 0, Maximum = 100, Height = 5, IsVisible = false };
     private readonly TextBlock freeResetTitle = new() { Text = "免费重置额度", FontSize = 11, Opacity = 0.8 };
     private readonly TextBlock freeResetPercentText = new() { Text = "暂未提供", FontSize = 13, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
     private readonly TextBlock freeResetStatusText = new() { Text = "免费重置额度暂未提供", FontSize = 10, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
@@ -25,7 +28,7 @@ public sealed class CodexUsageComponent : ComponentBase
         Plugin.Service = service;
         var layout = new Grid
         {
-            ColumnDefinitions = new ColumnDefinitions("*,*"),
+            ColumnDefinitions = new ColumnDefinitions("*,*,*"),
             RowDefinitions = new RowDefinitions("Auto,Auto"),
             ColumnSpacing = 16
         };
@@ -37,15 +40,29 @@ public sealed class CodexUsageComponent : ComponentBase
             Children = { percentText, progress }
         };
         progress.Width = 56;
+        fiveHourProgress.Width = 56;
+        var fiveHourValue = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 6,
+            VerticalAlignment = VerticalAlignment.Center,
+            Children = { fiveHourPercentText, fiveHourProgress }
+        };
         layout.Children.Add(weeklyTitle);
         layout.Children.Add(weeklyValue);
+        layout.Children.Add(fiveHourTitle);
+        layout.Children.Add(fiveHourValue);
         layout.Children.Add(freeResetTitle);
         layout.Children.Add(freeResetPercentText);
         Grid.SetColumn(weeklyValue, 0);
         Grid.SetRow(weeklyValue, 1);
-        Grid.SetColumn(freeResetTitle, 1);
+        Grid.SetColumn(fiveHourTitle, 1);
+        Grid.SetRow(fiveHourTitle, 0);
+        Grid.SetColumn(fiveHourValue, 1);
+        Grid.SetRow(fiveHourValue, 1);
+        Grid.SetColumn(freeResetTitle, 2);
         Grid.SetRow(freeResetTitle, 0);
-        Grid.SetColumn(freeResetPercentText, 1);
+        Grid.SetColumn(freeResetPercentText, 2);
         Grid.SetRow(freeResetPercentText, 1);
         Content = new Border
         {
@@ -64,6 +81,9 @@ public sealed class CodexUsageComponent : ComponentBase
             percentText.Text = snapshot.RemainingPercent is int value ? $"剩余 {value}%" : snapshot.Message;
             progress.Value = snapshot.RemainingPercent ?? 0;
             statusText.Text = snapshot.ResetAt is { } reset ? $"重置 {reset.LocalDateTime:MM/dd HH:mm}" : snapshot.Message;
+            fiveHourPercentText.Text = UsageDisplayFormatter.FiveHourPercent(snapshot.FiveHourUsage);
+            fiveHourProgress.IsVisible = snapshot.FiveHourUsage is not null;
+            fiveHourProgress.Value = snapshot.FiveHourUsage?.RemainingPercent ?? 0;
             freeResetPercentText.Text = snapshot.FreeResetCount is not null
                 ? UsageDisplayFormatter.FreeResetCountText(snapshot.FreeResetCount)
                 : UsageDisplayFormatter.FreeResetPercent(snapshot.FreeResetUsage);

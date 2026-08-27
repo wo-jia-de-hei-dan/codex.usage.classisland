@@ -10,17 +10,31 @@ public sealed class UsageResponseParser
         {
             using var document = JsonDocument.Parse(json);
             var root = document.RootElement;
-            var percent = FindNumber(root, "remaining_percent", "remainingPercentage", "remaining_percentile");
+            var windows = FindRateLimitWindows(root);
+            var weeklyWindow = windows.Secondary;
+            var fiveHourWindow = windows.Primary;
+            var percent = weeklyWindow is not null
+                ? FindNumber(weeklyWindow.Value, "remaining_percent", "remainingPercentage", "remaining_percentile")
+                : FindNumber(root, "remaining_percent", "remainingPercentage", "remaining_percentile");
             if (percent is null)
             {
-                var used = FindNumber(root, "used_percent", "usedPercentage", "usage_percent");
+                var used = weeklyWindow is not null
+                    ? FindNumber(weeklyWindow.Value, "used_percent", "usedPercentage", "usage_percent")
+                    : FindNumber(root, "used_percent", "usedPercentage", "usage_percent");
                 if (used is not null) percent = 100 - used;
             }
-            var reset = FindDate(root, "reset_at", "resetAt", "resets_at", "next_reset_at");
+            var reset = weeklyWindow is not null
+                ? FindDate(weeklyWindow.Value, "reset_at", "resetAt", "resets_at", "next_reset_at")
+                : FindDate(root, "reset_at", "resetAt", "resets_at", "next_reset_at");
             var value = NormalizePercent(percent);
             if (value is null) return new(UsageStatus.IncompatibleResponse, null, reset, DateTimeOffset.Now, "接口返回中没有可识别的额度百分比");
             var snapshot = new UsageSnapshot(UsageStatus.Success, value, reset, DateTimeOffset.Now, "已更新");
-            return snapshot with { FreeResetUsage = ParseFreeReset(root), FreeResetCount = ParseFreeResetCount(root) };
+            return snapshot with
+            {
+                FreeResetUsage = ParseFreeReset(root),
+                FreeResetCount = ParseFreeResetCount(root),
+                FiveHourUsage = ParseFiveHour(fiveHourWindow)
+            };
         }
         catch (JsonException)
         {
@@ -49,6 +63,36 @@ public sealed class UsageResponseParser
         if (!TryFindObject(root, out var resetCredits, "rate_limit_reset_credits", "rateLimitResetCredits")) return null;
         var count = FindNumber(resetCredits, "available_count", "availableCount");
         return count is >= 0 and <= int.MaxValue ? (int)Math.Round(count.Value) : null;
+    }
+
+    private static UsageAllowance? ParseFiveHour(JsonElement? window)
+    {
+        if (window is not { } value) return null;
+        var used = FindNumber(value, "used_percent", "usedPercentage", "usage_percent");
+        var remaining = FindNumber(value, "remaining_percent", "remainingPercentage", "remaining_percentile") ?? (used is null ? null : 100 - used);
+        var percent = NormalizePercent(remaining);
+        return percent is int result ? new UsageAllowance(result, FindDate(value, "reset_at", "resetAt", "resets_at", "next_reset_at")) : null;
+    }
+
+    private static (JsonElement? Primary, JsonElement? Secondary) FindRateLimitWindows(JsonElement root)
+    {
+        if (!TryFindObject(root, out var rateLimit, "rate_limit", "rateLimit")) return (null, null);
+        TryGetProperty(rateLimit, out var primary, "primary_window", "primaryWindow");
+        TryGetProperty(rateLimit, out var secondary, "secondary_window", "secondaryWindow");
+        return (primary.ValueKind == JsonValueKind.Object ? primary : null, secondary.ValueKind == JsonValueKind.Object ? secondary : null);
+    }
+
+    private static bool TryGetProperty(JsonElement element, out JsonElement value, params string[] names)
+    {
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var name in names)
+            {
+                if (element.TryGetProperty(name, out value)) return true;
+            }
+        }
+        value = default;
+        return false;
     }
 
     private static int? NormalizePercent(double? percent)

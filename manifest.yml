@@ -8,6 +8,6 @@ name: Codex 使用量
 description: 在 ClassIsland 组件中查看 Codex 每周剩余额度，并支持低额度提醒和自动化规则。
 entranceAssembly: "CodexUsageClassIsland.dll"
 url: https://chatgpt.com/codex
-version: 0.2.0.0
+version: 0.3.0.0
 apiVersion: 2.1.0.1
 author: Codex

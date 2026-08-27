@@ -11,6 +11,9 @@ public static class UsageDisplayFormatter
     public static string FreeResetCountText(int? count) =>
         count is int value && value >= 0 ? $"可用 {value} 次" : "暂未提供";
 
+    public static string FiveHourPercent(UsageAllowance? allowance) =>
+        allowance is { } value ? $"剩余 {value.RemainingPercent}%" : "暂未提供";
+
     public static string ResetText(DateTimeOffset? resetAt) =>
         resetAt is { } value ? $"重置 {value.LocalDateTime:MM/dd HH:mm}" : "重置时间暂未提供";
 }
